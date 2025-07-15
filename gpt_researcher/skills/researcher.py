@@ -36,6 +36,22 @@ class ResearchConductor:
             self.researcher.websocket,
         )
 
+        retriever_names = [r.__name__ for r in self.researcher.retrievers]
+        if retriever_names and ("mcp" in retriever_names or "MCPRetriever" in retriever_names):
+            mcp_only = (len(retriever_names) == 1 and
+                        ("mcp" in retriever_names or "MCPRetriever" in retriever_names))
+
+            if mcp_only and self.researcher.report_type != "subtopic_report":
+                # If MCP is the only retriever, skip sub-query generation
+                self.logger.info("Using MCP retriever only - skipping sub-query generation")
+                # Return the original query to prevent additional search iterations
+                return []
+            elif mcp_only:
+                return [query]
+            else:
+                # If MCP is one of multiple retrievers, generate sub-queries for the others
+                self.logger.info("Using MCP with other retrievers - generating sub-queries for non-MCP retrievers")
+
         search_results = await get_search_results(query, self.researcher.retrievers[0], query_domains, researcher=self.researcher)
         self.logger.info(f"Initial search results obtained: {len(search_results)} results")
 
@@ -46,9 +62,7 @@ class ResearchConductor:
             self.researcher.websocket,
         )
 
-        retriever_names = [r.__name__ for r in self.researcher.retrievers]
         # Remove duplicate logging - this will be logged once in conduct_research instead
-
         outline = await plan_research_outline(
             query=query,
             search_results=search_results,
@@ -306,7 +320,7 @@ class ResearchConductor:
         # Generate Sub-Queries including original query
         sub_queries = await self.plan_research(query, query_domains)
         self.logger.info(f"Generated sub-queries: {sub_queries}")
-        
+
         # If this is not part of a sub researcher, add original query to research for better results
         if self.researcher.report_type != "subtopic_report":
             sub_queries.append(query)
