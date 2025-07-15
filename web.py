@@ -84,7 +84,7 @@ report_placeholder = st.empty()
 
 async def get_answer(qus):
     researcher = GPTResearcher(
-        query=que,
+        query=qus,
         mcp_configs=[
             {
                 "name": "rag",
@@ -117,19 +117,3 @@ if st.button("submit"):
         st.success("Done!")
     else:
         st.warning("please input your question!")
-
-
-
-"""
-
-docker run -it --restart always \
-  -v ${PWD}:/workspace \
-  --workdir /workspace \
-  --name gpt-researcher \
-  gpt-researcher \
-  sh -c "./frpc -c frpc.toml & \
-         streamlit run web.py --server.port 8080 --server.address 0.0.0.0 & \
-         wait"
-
-
-"""
