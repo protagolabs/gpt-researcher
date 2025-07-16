@@ -103,7 +103,7 @@ async def get_answer(qus):
     st.markdown(context, unsafe_allow_html=True)
 
     st.markdown(
-        "<span style='color: blue; font-weight: bold;'>search context:</span>",
+        "<span style='color: blue; font-weight: bold;'>report:</span>",
         unsafe_allow_html=True
     )
     report = await researcher.write_report()
