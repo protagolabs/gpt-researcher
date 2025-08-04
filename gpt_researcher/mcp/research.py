@@ -8,7 +8,7 @@ import logging
 from typing import List, Dict, Any
 
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.DEBUG)
 
 class MCPResearchSkill:
     """
@@ -86,12 +86,12 @@ class MCPResearchSkill:
                 logger.info(f"LLM made {len(response.tool_calls)} tool calls")
                 
                 # Process each tool call
-                for i, tool_call in enumerate(response.tool_calls, 1):
+
+
+                async def get_mcp_tool_results(tool_call):
                     tool_name = tool_call.get("name", "unknown")
                     tool_args = tool_call.get("args", {})
-                    
-                    logger.info(f"Executing tool {i}/{len(response.tool_calls)}: {tool_name}")
-                    
+
                     # Log the tool arguments for transparency
                     if tool_args:
                         args_str = ", ".join([f"{k}={v}" for k, v in tool_args.items()])
@@ -102,8 +102,8 @@ class MCPResearchSkill:
                         tool = next((t for t in selected_tools if t.name == tool_name), None)
                         if not tool:
                             logger.warning(f"Tool {tool_name} not found in selected tools")
-                            continue
-                        
+                            return
+
                         # Execute the tool
                         if hasattr(tool, 'ainvoke'):
                             result = await tool.ainvoke(tool_args)
@@ -132,7 +132,11 @@ class MCPResearchSkill:
                             
                     except Exception as e:
                         logger.error(f"Error executing tool {tool_name}: {e}")
-                        continue
+                        return
+                task_list = []
+                for i, tool_call in enumerate(response.tool_calls, 1):
+                    task_list.append(asyncio.create_task(get_mcp_tool_results(tool_call)))
+                await asyncio.wait(task_list, return_when=asyncio.ALL_COMPLETED,timeout=300)
                         
             # Also include the LLM's own analysis/response as a result
             if hasattr(response, 'content') and response.content:
