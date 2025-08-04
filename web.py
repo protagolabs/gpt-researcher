@@ -1,3 +1,8 @@
+# config log at first
+import logging
+logging.basicConfig(format='[%(asctime)s]-[%(name)s]-[%(levelname)s] : %(message)s')
+logging.basicConfig(level=logging.DEBUG)
+
 import os
 import asyncio
 import requests
@@ -42,6 +47,7 @@ os.environ['RETRIEVER'] = RETRIEVER
 os.environ['DEEP_RESEARCH_BREADTH'] = str(DEEP_RESEARCH_BREADTH)
 os.environ['DEEP_RESEARCH_DEPTH'] = str(DEEP_RESEARCH_DEPTH)
 os.environ['DEEP_RESEARCH_CONCURRENCY'] = str(DEEP_RESEARCH_CONCURRENCY)
+os.environ['MCP_CHOOSE_TH'] = "6"
 
 
 st.title("Deep Researcher")

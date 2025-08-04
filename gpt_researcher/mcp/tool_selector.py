@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 from typing import List, Dict, Any, Optional
-
+import os
 logger = logging.getLogger(__name__)
 
 
@@ -95,7 +95,7 @@ class MCPToolSelector:
                         return self._fallback_tool_selection(all_tools, max_tools)
                 else:
                     logger.warning("No JSON found in LLM response, using fallback")
-                    return self._fallback_tool_selection(all_tools, max_tools)
+                    return self._fallback_tool_selection(all_tools, max_tools=1)
             
             selected_tools = []
             
@@ -107,8 +107,9 @@ class MCPToolSelector:
                 relevance_score = tool_selection.get("relevance_score", 0)
                 
                 if tool_index is not None and 0 <= tool_index < len(all_tools):
-                    selected_tools.append(all_tools[tool_index])
-                    logger.info(f"Selected tool '{tool_name}' (score: {relevance_score}): {reason}")
+                    if relevance_score > int(os.getenv("MCP_CHOOSE_TH",6)):
+                        selected_tools.append(all_tools[tool_index])
+                        logger.info(f"Selected tool '{tool_name}' (score: {relevance_score}): {reason}")
             
             if len(selected_tools) == 0:
                 logger.warning("No tools selected by LLM, using fallback selection")
