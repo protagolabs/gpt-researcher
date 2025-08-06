@@ -216,6 +216,7 @@ async def generate_report(
     websocket,
     cfg,
     main_topic: str = "",
+    mcp_retrival_results: list = [],
     existing_headers: list = [],
     relevant_written_contents: list = [],
     cost_callback: callable = None,
@@ -250,7 +251,7 @@ async def generate_report(
     if report_type == "subtopic_report":
         content = f"{generate_prompt(query, existing_headers, relevant_written_contents, main_topic, context, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words, language=cfg.language)}"
     elif custom_prompt:
-        content = f"{custom_prompt}\n\nContext: {context}"
+        content = f"{custom_prompt}\n\nQuery:{query} \n\nContext: {mcp_retrival_results}"
     else:
         content = f"{generate_prompt(query, context, report_source, report_format=cfg.report_format, tone=tone, total_words=cfg.total_words, language=cfg.language)}"
     try:

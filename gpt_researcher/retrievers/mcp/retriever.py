@@ -7,6 +7,7 @@ This retriever implements a two-stage approach:
 2. Research Execution: LLM uses the selected tools to conduct intelligent research
 """
 import asyncio
+import json
 import logging
 from typing import List, Dict, Any, Optional
 
@@ -149,7 +150,11 @@ class MCPRetriever:
             if not selected_tools:
                 await self.streamer.stream_warning("No relevant tools selected, skipping MCP research")
                 return []
-            
+            if self.researcher.custom_websocket:
+                await self.researcher.custom_websocket.send_text(json.dumps({
+                    "type": "status",
+                    "message": f"Choose {len(selected_tools)} tools for research"
+                }))
             # Stage 3: Conduct research with selected tools
             await self.streamer.stream_stage_start("Stage 3", "Conducting research with selected tools")
             results = await self.mcp_researcher.conduct_research_with_tools(self.query, selected_tools)

@@ -95,27 +95,47 @@ Select exactly {max_tools} tools, ranked by relevance to the research query.
             str: The research execution prompt
         """
         # Handle cases where selected_tools might be strings or objects with .name attribute
-        tool_names = []
+        tool_info = []
         for tool in selected_tools:
             if hasattr(tool, 'name'):
-                tool_names.append(tool.name)
+                tool_name = tool.name
+                # Try to get description if available
+                tool_description = getattr(tool, 'description', 'No description available')
+                tool_info.append(f"- {tool_name}: {tool_description}")
             else:
-                tool_names.append(str(tool))
+                tool_info.append(f"- {str(tool)}")
+        
+        tools_formatted = "\n".join(tool_info)
         
         return f"""You are a research assistant with access to specialized tools. Your task is to research the following query and provide comprehensive, accurate information.
 
 RESEARCH QUERY: "{query}"
 
-INSTRUCTIONS:
+AVAILABLE TOOLS:
+{tools_formatted}
+
+IMPORTANT INSTRUCTIONS:
 1. Use the available tools to gather relevant information about the query
-2. Call multiple tools if needed to get comprehensive coverage
+2. Call multiple tools if needed to get comprehensive coverage from different sources
 3. If a tool call fails or returns empty results, try alternative approaches
 4. Synthesize information from multiple sources when possible
 5. Focus on factual, relevant information that directly addresses the query
+6. Each tool has specific capabilities and limitations - only use tools that can actually provide information relevant to the query
+7. Do not attempt to use tools for queries outside their described capabilities
 
-AVAILABLE TOOLS: {tool_names}
 
-Please conduct thorough research and provide your findings. Use the tools strategically to gather the most relevant and comprehensive information."""
+TOOL USAGE GUIDELINES:
+- Read each tool's description carefully before using it
+- Generate query parameters that are specifically tailored to each tool's capabilities. for example: 
+DO NOT Generate query: "how do A perform compared to B in XX and YY" for tools "query_tool_A" 
+You should generate 4 different query: "how do A perform in XX" and "how do A perform in YY" for tool "query_tool_A" 
+and "how do B perform in XX" and "how do B perform in YY" for tool "query_tool_B" 
+and call each tool with each query.
+
+- If a tool is designed for specific data types or domains, ensure your queries match those requirements
+- Combine tools strategically to get the most comprehensive research coverage
+
+Please conduct thorough research and provide your findings. Use the tools strategically and within their described capabilities to gather the most relevant and comprehensive information."""
 
     @staticmethod
     def generate_search_queries_prompt(
@@ -209,6 +229,8 @@ Please follow all of the following guidelines in your report:
 - You MUST prioritize the relevance, reliability, and significance of the sources you use. Choose trusted sources over less reliable ones.
 - You must also prioritize new articles over older articles if the source can be trusted.
 - You MUST NOT include a table of contents. Start from the main report body directly.
+- Do not introduce or infer any information that is not explicitly present in the Information above.
+- You may selectively reference or quote from the “References” section in Information given above if it helps illustrate or support your explanation, but do not need to list all references.
 - {tone_prompt}
 
 You MUST write the report in the following language: {language}.

@@ -21,6 +21,7 @@ class ResearchConductor:
         self._mcp_results_cache = None
         # Track MCP query count for balanced mode
         self._mcp_query_count = 0
+        self.mcp_retrival_results = []
 
     async def plan_research(self, query, query_domains=None):
         """Gets the sub-queries from the query
@@ -346,6 +347,7 @@ class ResearchConductor:
             self.logger.info(f"Gathered context from {len(context)} sub-queries")
             # Filter out empty results and join the context
             context = [c for c in context if c]
+            self.mcp_retrival_results = context
             if context:
                 combined_context = " ".join(context)
                 self.logger.info(f"Combined context size: {len(combined_context)}")
@@ -591,7 +593,7 @@ class ResearchConductor:
                 headers=self.researcher.headers,
                 query_domains=self.researcher.query_domains,
                 websocket=self.researcher.websocket,
-                researcher=self.researcher  # Pass the entire researcher instance
+                researcher=self.researcher,  # Pass the entire researcher instance
             )
             
             if self.researcher.verbose:

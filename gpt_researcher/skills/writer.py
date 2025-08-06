@@ -27,7 +27,7 @@ class ReportGenerator:
             "headers": self.researcher.headers,
         }
 
-    async def write_report(self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt="") -> str:
+    async def write_report(self, existing_headers: list = [], relevant_written_contents: list = [], ext_context=None, custom_prompt="", mcp_retrival_results=[]) -> str:
         """
         Write a report based on existing headers and relevant contents.
 
@@ -63,6 +63,7 @@ class ReportGenerator:
 
         report_params = self.research_params.copy()
         report_params["context"] = context
+        report_params["mcp_retrival_results"] = mcp_retrival_results
         report_params["custom_prompt"] = custom_prompt
 
         if self.researcher.report_type == "subtopic_report":

@@ -1,5 +1,8 @@
 # config log at first
 import logging
+
+from custom_prompt import Report_Custom_Prompt
+
 logging.basicConfig(format='[%(asctime)s]-[%(name)s]-[%(levelname)s] : %(message)s')
 logging.basicConfig(level=logging.DEBUG)
 
@@ -47,6 +50,7 @@ os.environ['RETRIEVER'] = RETRIEVER
 os.environ['DEEP_RESEARCH_BREADTH'] = str(DEEP_RESEARCH_BREADTH)
 os.environ['DEEP_RESEARCH_DEPTH'] = str(DEEP_RESEARCH_DEPTH)
 os.environ['DEEP_RESEARCH_CONCURRENCY'] = str(DEEP_RESEARCH_CONCURRENCY)
+os.environ['NETMIND_API_KEY'] = "098ba1186ed849bca1180a75383075b7"
 os.environ['MCP_CHOOSE_TH'] = "6"
 
 
@@ -112,7 +116,7 @@ async def get_answer(qus):
         "<span style='color: blue; font-weight: bold;'>report:</span>",
         unsafe_allow_html=True
     )
-    report = await researcher.write_report()
+    report = await researcher.write_report(custom_prompt=Report_Custom_Prompt)
     st.markdown(report, unsafe_allow_html=True)
 
 

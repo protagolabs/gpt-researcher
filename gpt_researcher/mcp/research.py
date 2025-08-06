@@ -4,6 +4,7 @@ MCP Research Execution Skill
 Handles research execution using selected MCP tools as a skill component.
 """
 import asyncio
+import json
 import logging
 from typing import List, Dict, Any
 
@@ -96,6 +97,13 @@ class MCPResearchSkill:
                     if tool_args:
                         args_str = ", ".join([f"{k}={v}" for k, v in tool_args.items()])
                         logger.debug(f"Tool arguments: {args_str}")
+                        if self.researcher.custom_websocket:
+                            await self.researcher.custom_websocket.send_text(
+                                json.dumps({
+                                    "type": "Mcp Call with query",
+                                    "message": args_str
+                                })
+                            )
                     
                     try:
                         # Find the tool by name

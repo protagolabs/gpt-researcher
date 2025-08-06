@@ -45,6 +45,7 @@ class GPTResearcher:
         vector_store_filter=None,
         config_path=None,
         websocket=None,
+        custom_websocket=None,
         agent=None,
         role=None,
         parent_query: str = "",
@@ -133,6 +134,7 @@ class GPTResearcher:
         self.vector_store = VectorStoreWrapper(vector_store) if vector_store else None
         self.vector_store_filter = vector_store_filter
         self.websocket = websocket
+        self.custom_websocket = custom_websocket
         self.agent = agent
         self.role = role
         self.parent_query = parent_query
@@ -313,6 +315,11 @@ class GPTResearcher:
                 "agent": self.agent,
                 "role": self.role
             })
+            if self.custom_websocket:
+                await self.custom_websocket.send_text(json.dumps({
+                    "type": "status",
+                    "message": f"Generating Agent: {self.agent}"
+                }))
 
         await self._log_event("research", step="conducting_research", details={
             "agent": self.agent,
@@ -376,7 +383,8 @@ class GPTResearcher:
             existing_headers=existing_headers,
             relevant_written_contents=relevant_written_contents,
             ext_context=ext_context or self.context,
-            custom_prompt=custom_prompt
+            custom_prompt=custom_prompt,
+            mcp_retrival_results=self.research_conductor.mcp_retrival_results
         )
 
         await self._log_event("research", step="report_completed", details={
